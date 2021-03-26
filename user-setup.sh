@@ -1,9 +1,18 @@
-sudo yum update
-wget https://github.com/dotnet/core/files/2186067/openssl-libs-ami.spec.txt
-rpmbuild --bb openssl-libs-ami.spec.txt
-sudo rpm -i /usr/src/rpm/RPMS/x86_64/openssl-libs-1.0.0-0.x86_64.rpm
-sudo rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
-sudo yum install dotnet-sdk-3.1 zsh
-sudo passwd ec2-user
-chsh -s /bin/zsh
-sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+USERS=("User1" "User2" "User3")
+userList=""
+
+for userId in "${USERS[@]}" ; do 
+    #echo $userId    
+    randomPwd=$(aws secretsmanager get-random-password \
+    --require-each-included-type \
+    --password-length 20 \
+    --include-space \
+    --output text)
+
+    #echo $randomPwd    
+    userList="$userList"$'\n'"Username: $userId, Password: $randomPwd"
+    user=`aws iam create-user --user-name $userId`  
+    profile=$(aws iam create-login-profile --user-name $userId --password $randomPwd --password-reset-required)
+done
+
+echo "$userList"
