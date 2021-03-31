@@ -1,11 +1,19 @@
 #wget https://raw.githubusercontent.com/aws-snippets/cloud9-userdata/main/user-setup.sh
-#sh user-setup.sh -e nfrgean -u user1
+#
+#USAGE: 
+#STEP 1: Execute following command within Cloud9 terminal to retrieve envronment id
+# aws cloud9 list-environments
+#STEP 2: Execute following command by providing appropriate parameters -e ENVIRONMENTID -u USERNAME1,USERNAME2,USeRNAME3 -r REPONAME 
+# sh user-setup.sh -e 877f86c3bb80418aabc9956580436e9a -u User1,User2 -r sam-app
 
-while getopts ":e:u:" opt; do
+
+while getopts ":e:u:r" opt; do
   case $opt in
     e) environmentId="$OPTARG"
     ;;
     u) users="$OPTARG"
+    ;;
+    r) repo="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -14,22 +22,25 @@ done
 
 echo $environmentId
 echo $users
+echo $repo
 
-environmentId='877f86c3bb80418aabc9956580436e9a'
-users=('User1')
+#environmentId='877f86c3bb80418aabc9956580436e9a'
+#users=('User1')
+repo='sam-app'
 groupName='HackathonUsers'
 groupPolicy='arn:aws:iam::aws:policy/AdministratorAccess'
 
 function createRepo() {
-    sam init --runtime python3.7 --dependency-manager pip --app-template hello-world --name sam-app --no-interactive
+    sam init  --no-interactive --runtime python3.7 --dependency-manager pip --app-template hello-world --name $repo
     cd sam-app
-    repoUrl=`aws codecommit create-repository --repository-name MyDemoRepo --repository-description "My demonstration repository" --query 'repositoryMetadata.cloneUrlHttp' | sed -e 's/\/.*\///g' | tr -d '"'`
+    repoUrl=`aws codecommit create-repository --repository-name $repo --repository-description "My demonstration repository" --query 'repositoryMetadata.cloneUrlHttp' | tr -d '"'`
     echo $repoUrl
     git config --global init.defaultBranch main
     git init
     git add .
-    git commit –m "Initial commit"
+    git commit -m "Initial commit"
     git push $repoUrl --all
+    echo "Succesfully created CodeCommit repo with sample SAM Lambda application"
 }
 
 function createUsers() {
@@ -75,11 +86,20 @@ function createUsers() {
         --user-name $userName \
         --group-name $groupName
 
-        aws cloud9 create-environment-membership --environment-id $environmentId --user-arn $userArn --permissions read-write
+        #Loop until counter is 3
+        counter=1
+        while [[ $counter -le 3 ]] ; do
+                aws cloud9 create-environment-membership --environment-id $environmentId --user-arn $userArn --permissions read-write && break
+                sleep 3
+                ((counter++))
+                echo "Retrying..."
+        done
+        
     done
 
     echo "Following users have been created and added to $groupName group."
     echo "$userList"
+    createRepo
 }
 
 function cleanUp() {
@@ -89,6 +109,11 @@ function cleanUp() {
     #     --environment-id $environmentId \
     #     --user-arn $userArn
     # done
+    
+    aws codecommit delete-repository --repository-name $repo
+    echo "Succesfully deleted repo: $repo"
+    
+    rm -rf $repo
 
     for userName in "${users[@]}" ; do 
         aws iam remove-user-from-group \
@@ -115,5 +140,4 @@ function cleanUp() {
 }
 
 #createUsers
-cleanUp
-
+#cleanUp
