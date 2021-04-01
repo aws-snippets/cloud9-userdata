@@ -32,7 +32,7 @@ function cleanUp() {
 
     for userName in "${userNames[@]}" ; do 
         userArn=$(aws iam get-user \
-        --user-name TeamMember \
+        --user-name $userName \
         --query 'User.Arn' | tr -d '"')
         
         aws cloud9 delete-environment-membership \
