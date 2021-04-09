@@ -25,11 +25,6 @@ groupPolicy='arn:aws:iam::aws:policy/AdministratorAccess'
 function cleanUp() {
     printf "Starting cleanup...\n"
 
-    aws codecommit delete-repository --repository-name $repo
-    printf "Succesfully deleted repo: $repo\n"
-    
-    rm -rf $repo
-
     for userName in "${userNames[@]}" ; do 
         userArn=$(aws iam get-user \
         --user-name $userName \
