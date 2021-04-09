@@ -21,18 +21,6 @@ IFS=',' read -ra userNames <<< "$users"
 groupName='HackathonUsers'
 groupPolicy='arn:aws:iam::aws:policy/AdministratorAccess'
 
-function createRepo() {
-    sam init  --no-interactive --runtime python3.7 --dependency-manager pip --app-template hello-world --name $repo
-    cd sam-app
-    repoUrl=`aws codecommit create-repository --repository-name $repo --repository-description "Codecommit repository" --query 'repositoryMetadata.cloneUrlHttp' | tr -d '"'`
-    git config --global init.defaultBranch main
-    git init
-    git add .
-    git commit -m "Initial commit"
-    git push $repoUrl --all
-    printf "Succesfully created CodeCommit repo with sample SAM Lambda application at \n $repoUrl\n"
-}
-
 function createUsers() {
     userList=""    
 
@@ -86,7 +74,6 @@ function createUsers() {
     echo "Following users have been created and added to $groupName group.\n"
     echo "$userList\n"
     
-    createRepo
 }
 
 
