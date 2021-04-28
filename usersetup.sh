@@ -1,5 +1,3 @@
-#wget https://raw.githubusercontent.com/aws-snippets/cloud9-userdata/main/usersetup.sh
-#
 #USAGE: 
 #STEP 1: Execute following command within Cloud9 terminal to retrieve envronment id
 # aws cloud9 list-environments
