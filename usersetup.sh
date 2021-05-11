@@ -1,15 +1,13 @@
 #USAGE: 
 #STEP 1: Execute following command within Cloud9 terminal to retrieve envronment id
 # aws cloud9 list-environments
-#STEP 2: Execute following command by providing appropriate parameters: -e ENVIRONMENTID -u USERNAME1,USERNAME2,USeRNAME3 -r REPONAME 
-# sh usersetup.sh -e 877f86c3bb80418aabc9956580436e9a -u User1,User2 -r sam-app
+#STEP 2: Execute following command by providing appropriate parameters: -e ENVIRONMENTID -u USERNAME1,USERNAME2,USERNAME3 
+# sh usersetup.sh -e 877f86c3bb80418aabc9956580436e9a -u User1,User2
 
-
-while getopts ":e:u:r:" opt; do
+while getopts ":e:u:" opt; do
   case $opt in
     e) environmentId="$OPTARG" ;;
     u) users="$OPTARG" ;;
-    r) repo="$OPTARG" ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
