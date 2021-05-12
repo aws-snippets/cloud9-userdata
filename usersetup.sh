@@ -32,11 +32,11 @@ function createUsers() {
 
     for userName in "${userNames[@]}" ; do 
         
-        randomPwd=$(aws secretsmanager get-random-password \
+        randomPwd=`aws secretsmanager get-random-password \
         --require-each-included-type \
         --password-length 20 \
         --include-space \
-        --output text)
+        --output text`
     
         userList="$userList"$'\n'"Username: $userName, Password: $randomPwd"
         
